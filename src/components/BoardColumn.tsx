@@ -27,11 +27,18 @@ interface BoardColumnProps {
   column: Column;
   tasks: Task[];
   isOverlay?: boolean;
-  onAddTask?: (content: string) => void;
+  onAddTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
+  onDeleteTask?: (taskId: UniqueIdentifier) => void;
 }
 
-export function BoardColumn({ column, tasks, isOverlay, onAddTask }: BoardColumnProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
+export function BoardColumn({
+  column,
+  tasks,
+  isOverlay,
+  onAddTask,
+  onDeleteTask,
+}: BoardColumnProps) {
+  const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const tasksIds = useMemo(() => {
     return tasks.map((task) => task.id);
   }, [tasks]);
@@ -97,7 +104,7 @@ export function BoardColumn({ column, tasks, isOverlay, onAddTask }: BoardColumn
               variant="ghost"
               size="icon"
               className="h-6 w-6 text-primary/50 hover:text-primary"
-              onClick={() => setDialogOpen(true)}
+              onClick={() => setAddTaskDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />
               <span className="sr-only">添加任务</span>
@@ -108,7 +115,7 @@ export function BoardColumn({ column, tasks, isOverlay, onAddTask }: BoardColumn
           <CardContent className="flex flex-grow flex-col gap-2 p-2">
             <SortableContext items={tasksIds}>
               {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
+                <TaskCard key={task.id} task={task} onDelete={onDeleteTask} />
               ))}
             </SortableContext>
           </CardContent>
@@ -116,8 +123,8 @@ export function BoardColumn({ column, tasks, isOverlay, onAddTask }: BoardColumn
       </Card>
       {column.id === "standard" && onAddTask && (
         <AddTaskDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
+          open={addTaskDialogOpen}
+          onOpenChange={setAddTaskDialogOpen}
           onAddTask={onAddTask}
         />
       )}

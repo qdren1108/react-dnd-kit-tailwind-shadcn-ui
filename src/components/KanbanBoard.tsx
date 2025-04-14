@@ -21,6 +21,7 @@ import { type Task, TaskCard } from "./TaskCard";
 import type { Column } from "./BoardColumn";
 import { hasDraggableData } from "./utils";
 import { coordinateGetter } from "./multipleContainersKeyboardPreset";
+import { TaskTransformDialog } from "./TaskTransformDialog";
 
 const defaultCols = [
   {
@@ -48,59 +49,40 @@ const initialTasks: Task[] = [
   {
     id: "task1",
     columnId: "standard",
-    content: "顾客属性变更",
+    name: "顾客属性变更",
+    description: "更新顾客的基本属性信息",
+    tableName: "customer",
+    url: "/api/customer/update",
+    params: "customerId, attributes"
   },
-
   {
     id: "task4",
     columnId: "bank",
-    content: "Develop homepage layout",
-  },
-  {
-    id: "task5",
-    columnId: "bank",
-    content: "Design color scheme and typography",
+    name: "顾客属性变更 - 电话修改",
+    description: "更新顾客留存电话",
+    tableName: "bank_account",
+    url: "/api/bank/phone/update",
+    params: "accountId, phone"
   },
   {
     id: "task6",
     columnId: "person",
-    content: "Implement user authentication",
+    name: "个人信息更新",
+    description: "更新个人基本信息",
+    tableName: "person",
+    url: "/api/person/update",
+    params: "personId, info"
   },
   {
     id: "task7",
     columnId: "person",
-    content: "Build contact us page",
+    name: "联系方式变更",
+    description: "更新联系方式信息",
+    tableName: "contact",
+    url: "/api/person/contact/update",
+    params: "personId, contactInfo"
   },
-  {
-    id: "task8",
-    columnId: "person",
-    content: "Create product catalog",
-  },
-  {
-    id: "task9",
-    columnId: "person",
-    content: "Develop about us page",
-  },
-  {
-    id: "task10",
-    columnId: "person",
-    content: "Optimize website for mobile devices",
-  },
-  {
-    id: "task11",
-    columnId: "person",
-    content: "Integrate payment gateway",
-  },
-  {
-    id: "task12",
-    columnId: "person",
-    content: "Perform testing and bug fixing",
-  },
-  {
-    id: "task13",
-    columnId: "person",
-    content: "Launch website and deploy to server",
-  },
+
 ];
 export function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>(defaultCols);
@@ -113,6 +95,9 @@ export function KanbanBoard() {
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
+  const [transformDialogOpen, setTransformDialogOpen] = useState(false);
+  const [taskToTransform, setTaskToTransform] = useState<Task | null>(null);
+
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor),
@@ -121,11 +106,17 @@ export function KanbanBoard() {
     })
   );
 
-  const handleAddTask = (content: string) => {
+  const handleAddTask = (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+  }) => {
     const newTask: Task = {
       id: `task${tasks.length + 1}`,
       columnId: "standard",
-      content,
+      ...taskData
     };
     setTasks([...tasks, newTask]);
   };
@@ -225,48 +216,6 @@ export function KanbanBoard() {
     },
   };
 
-  return (
-    <DndContext
-      accessibility={{
-        announcements,
-      }}
-      sensors={sensors}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragOver={onDragOver}
-    >
-      <BoardContainer>
-        <SortableContext items={columnsId}>
-          {columns.map((col) => (
-            <BoardColumn
-              key={col.id}
-              column={col}
-              tasks={tasks.filter((task) => task.columnId === col.id)}
-              onAddTask={col.id === "standard" ? handleAddTask : undefined}
-            />
-          ))}
-        </SortableContext>
-      </BoardContainer>
-
-      {"document" in window &&
-        createPortal(
-          <DragOverlay>
-            {activeColumn && (
-              <BoardColumn
-                isOverlay
-                column={activeColumn}
-                tasks={tasks.filter(
-                  (task) => task.columnId === activeColumn.id
-                )}
-              />
-            )}
-            {activeTask && <TaskCard task={activeTask} isOverlay />}
-          </DragOverlay>,
-          document.body
-        )}
-    </DndContext>
-  );
-
   function onDragStart(event: DragStartEvent) {
     if (!hasDraggableData(event.active)) return;
     const data = event.active.data.current;
@@ -294,22 +243,64 @@ export function KanbanBoard() {
     if (!hasDraggableData(active)) return;
 
     const activeData = active.data.current;
+    const overData = over.data.current;
 
     if (activeId === overId) return;
 
+    // 处理从标准事件库到银行事件库的拖拽
+    if (
+      activeData?.type === "Task" &&
+      activeData?.task.columnId === "standard" &&
+      ((overData?.type === "Task" && overData?.task.columnId === "bank") ||
+        (overData?.type === "Column" && overId === "bank"))
+    ) {
+      setTaskToTransform(activeData.task);
+      setTransformDialogOpen(true);
+      return;
+    }
+
     const isActiveAColumn = activeData?.type === "Column";
-    if (!isActiveAColumn) return;
+    if (isActiveAColumn) {
+      setColumns((columns) => {
+        const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+        const overColumnIndex = columns.findIndex((col) => col.id === overId);
+        return arrayMove(columns, activeColumnIndex, overColumnIndex);
+      });
+      return;
+    }
 
-    setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+    // 处理任务的移动
+    if (activeData?.type === "Task") {
+      setTasks((tasks) => {
+        const activeIndex = tasks.findIndex((t) => t.id === activeId);
+        const overIndex = tasks.findIndex((t) => t.id === overId);
+        const activeTask = tasks[activeIndex];
 
-      const overColumnIndex = columns.findIndex((col) => col.id === overId);
+        if (!activeTask) return tasks;
 
-      return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    });
+        // 如果是拖到另一个列上
+        if (overData?.type === "Column") {
+          activeTask.columnId = overId as ColumnId;
+          return arrayMove(tasks, activeIndex, activeIndex);
+        }
+
+        // 如果是拖到另一个任务上
+        if (overData?.type === "Task") {
+          const overTask = tasks[overIndex];
+          if (overTask && activeTask.columnId !== overTask.columnId) {
+            activeTask.columnId = overTask.columnId;
+            return arrayMove(tasks, activeIndex, overIndex - 1);
+          }
+          return arrayMove(tasks, activeIndex, overIndex);
+        }
+
+        return tasks;
+      });
+    }
   }
 
   function onDragOver(event: DragOverEvent) {
+    // 移除在 onDragOver 中的任务转换逻辑，只在 onDragEnd 中处理
     const { active, over } = event;
     if (!over) return;
 
@@ -333,34 +324,84 @@ export function KanbanBoard() {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
         const overIndex = tasks.findIndex((t) => t.id === overId);
-        const activeTask = tasks[activeIndex];
-        const overTask = tasks[overIndex];
-        if (
-          activeTask &&
-          overTask &&
-          activeTask.columnId !== overTask.columnId
-        ) {
-          activeTask.columnId = overTask.columnId;
-          return arrayMove(tasks, activeIndex, overIndex - 1);
-        }
-
         return arrayMove(tasks, activeIndex, overIndex);
       });
     }
-
-    const isOverAColumn = overData?.type === "Column";
-
-    // Im dropping a Task over a column
-    if (isActiveATask && isOverAColumn) {
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
-        const activeTask = tasks[activeIndex];
-        if (activeTask) {
-          activeTask.columnId = overId as ColumnId;
-          return arrayMove(tasks, activeIndex, activeIndex);
-        }
-        return tasks;
-      });
-    }
   }
+
+  const handleTransformTask = (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+    transformType: string;
+  }) => {
+    if (!taskToTransform) return;
+
+    const newTask: Task = {
+      id: `task${tasks.length + 1}`,
+      columnId: "bank",
+      ...taskData
+    };
+
+    setTasks([...tasks, newTask]);
+    setTaskToTransform(null);
+  };
+
+  const handleDeleteTask = (taskId: UniqueIdentifier) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
+
+  return (
+    <DndContext
+      accessibility={{
+        announcements,
+      }}
+      sensors={sensors}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+    >
+      <BoardContainer>
+        <SortableContext items={columnsId}>
+          {columns.map((col) => (
+            <BoardColumn
+              key={col.id}
+              column={col}
+              tasks={tasks.filter((task) => task.columnId === col.id)}
+              onAddTask={col.id === "standard" ? handleAddTask : undefined}
+              onDeleteTask={handleDeleteTask}
+            />
+          ))}
+        </SortableContext>
+      </BoardContainer>
+
+      {taskToTransform && (
+        <TaskTransformDialog
+          open={transformDialogOpen}
+          onOpenChange={setTransformDialogOpen}
+          sourceTask={taskToTransform}
+          onTransform={handleTransformTask}
+        />
+      )}
+
+      {"document" in window &&
+        createPortal(
+          <DragOverlay>
+            {activeColumn && (
+              <BoardColumn
+                isOverlay
+                column={activeColumn}
+                tasks={tasks.filter(
+                  (task) => task.columnId === activeColumn.id
+                )}
+              />
+            )}
+            {activeTask && <TaskCard task={activeTask} isOverlay />}
+          </DragOverlay>,
+          document.body
+        )}
+    </DndContext>
+  );
 }

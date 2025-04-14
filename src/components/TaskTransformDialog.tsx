@@ -10,39 +10,54 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
+import { Task } from "./TaskCard";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "./ui/select";
 
-interface AddTaskDialogProps {
+interface TaskTransformDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onAddTask: (taskData: {
+    sourceTask: Task;
+    onTransform: (taskData: {
         name: string;
         description: string;
         tableName: string;
         url: string;
         params: string;
+        transformType: string;
     }) => void;
 }
 
-export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogProps) {
+const TRANSFORM_TYPES = [
+    { id: 'phone', label: '电话修改' },
+    { id: 'email', label: '邮箱修改' },
+    { id: 'address', label: '地址修改' },
+];
+
+export function TaskTransformDialog({
+    open,
+    onOpenChange,
+    sourceTask,
+    onTransform
+}: TaskTransformDialogProps) {
     const [taskData, setTaskData] = useState({
-        name: "",
-        description: "",
-        tableName: "",
-        url: "",
-        params: ""
+        name: sourceTask.name,
+        description: sourceTask.description,
+        tableName: sourceTask.tableName,
+        url: sourceTask.url,
+        params: sourceTask.params,
+        transformType: ''
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (taskData.name.trim()) {
-            onAddTask(taskData);
-            setTaskData({
-                name: "",
-                description: "",
-                tableName: "",
-                url: "",
-                params: ""
-            });
+        if (taskData.transformType && taskData.name.trim()) {
+            onTransform(taskData);
             onOpenChange(false);
         }
     };
@@ -61,12 +76,38 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>添加新任务</DialogTitle>
+                        <DialogTitle>转换任务类型</DialogTitle>
                         <DialogDescription>
-                            在此添加新的标准事件任务。
+                            请选择要转换的任务类型并修改相关信息。
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="transformType" className="text-right">
+                                转换类型
+                            </Label>
+                            <Select
+                                value={taskData.transformType}
+                                onValueChange={(value) =>
+                                    setTaskData(prev => ({
+                                        ...prev,
+                                        transformType: value,
+                                        name: `${sourceTask.name} - ${TRANSFORM_TYPES.find(t => t.id === value)?.label}`
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="选择转换类型" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {TRANSFORM_TYPES.map(type => (
+                                        <SelectItem key={type.id} value={type.id}>
+                                            {type.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">
                                 名称
@@ -129,8 +170,8 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit" disabled={!taskData.name.trim()}>
-                            添加任务
+                        <Button type="submit" disabled={!taskData.transformType || !taskData.name.trim()}>
+                            确认转换
                         </Button>
                     </DialogFooter>
                 </form>
