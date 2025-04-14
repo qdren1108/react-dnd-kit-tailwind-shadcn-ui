@@ -259,6 +259,25 @@ export function KanbanBoard() {
       return;
     }
 
+    // 处理从银行事件库到个人事件库的克隆
+    if (
+      activeData?.type === "Task" &&
+      activeData?.task.columnId === "bank" &&
+      ((overData?.type === "Task" && overData?.task.columnId === "person") ||
+        (overData?.type === "Column" && overId === "person"))
+    ) {
+      const activeTask = tasks.find((t) => t.id === activeId);
+      if (activeTask) {
+        const newTask: Task = {
+          ...activeTask,
+          id: `task${tasks.length + 1}`,
+          columnId: "person" as ColumnId
+        };
+        setTasks([...tasks, newTask]);
+        return;
+      }
+    }
+
     const isActiveAColumn = activeData?.type === "Column";
     if (isActiveAColumn) {
       setColumns((columns) => {
