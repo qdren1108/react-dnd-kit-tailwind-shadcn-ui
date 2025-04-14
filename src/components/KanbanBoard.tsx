@@ -22,6 +22,7 @@ import type { Column } from "./BoardColumn";
 import { hasDraggableData } from "./utils";
 import { coordinateGetter } from "./multipleContainersKeyboardPreset";
 import { TaskTransformDialog } from "./TaskTransformDialog";
+import { TaskExecuteDialog } from "./TaskExecuteDialog";
 
 const defaultCols = [
   {
@@ -106,6 +107,11 @@ export function KanbanBoard() {
 
   const [transformDialogOpen, setTransformDialogOpen] = useState(false);
   const [taskToTransform, setTaskToTransform] = useState<Task | null>(null);
+
+  const [executeDialogOpen, setExecuteDialogOpen] = useState(false);
+  const [taskToExecute, setTaskToExecute] = useState<Task | null>(null);
+
+  const [originalTaskColumn, setOriginalTaskColumn] = useState<ColumnId | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -256,6 +262,27 @@ export function KanbanBoard() {
 
     if (activeId === overId) return;
 
+    // 处理从个人事件库到执行事件库的拖拽
+    if (
+      activeData?.type === "Task" &&
+      activeData?.task.columnId === "person" &&
+      ((overData?.type === "Task" && overData?.task.columnId === "execute") ||
+        (overData?.type === "Column" && overId === "execute"))
+    ) {
+      const activeTask = tasks.find((t) => t.id === activeId);
+      if (activeTask) {
+        // 保存原始列ID
+        setOriginalTaskColumn(activeTask.columnId);
+        // 先将任务移动到执行库
+        setTasks(tasks.map(task =>
+          task.id === activeId ? { ...task, columnId: "execute" } : task
+        ));
+        setTaskToExecute(activeTask);
+        setExecuteDialogOpen(true);
+        return;
+      }
+    }
+
     // 处理从标准事件库到银行事件库的拖拽
     if (
       activeData?.type === "Task" &&
@@ -397,6 +424,27 @@ export function KanbanBoard() {
     setTasks([...tasks, newTask]);
   };
 
+  const handleExecuteTask = (taskData: Task) => {
+    setTasks(tasks.map(task =>
+      task.id === taskData.id ? taskData : task
+    ));
+    setExecuteDialogOpen(false);
+    setTaskToExecute(null);
+    setOriginalTaskColumn(null);
+  };
+
+  const handleCancelExecute = () => {
+    if (taskToExecute && originalTaskColumn) {
+      // 如果取消，将任务移回原处
+      setTasks(tasks.map(task =>
+        task.id === taskToExecute.id ? { ...task, columnId: originalTaskColumn } : task
+      ));
+    }
+    setExecuteDialogOpen(false);
+    setTaskToExecute(null);
+    setOriginalTaskColumn(null);
+  };
+
   return (
     <DndContext
       accessibility={{
@@ -428,6 +476,16 @@ export function KanbanBoard() {
           onOpenChange={setTransformDialogOpen}
           sourceTask={taskToTransform}
           onTransform={handleTransformTask}
+        />
+      )}
+
+      {taskToExecute && (
+        <TaskExecuteDialog
+          open={executeDialogOpen}
+          onOpenChange={setExecuteDialogOpen}
+          task={taskToExecute}
+          onExecute={handleExecuteTask}
+          onCancel={handleCancelExecute}
         />
       )}
 
