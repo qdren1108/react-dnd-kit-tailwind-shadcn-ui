@@ -25,8 +25,8 @@ import { TaskTransformDialog } from "./TaskTransformDialog";
 
 const defaultCols = [
   {
-    id: "dialog" as const,
-    title: "对话事件",
+    id: "execute" as const,
+    title: "执行事件库",
   },
   {
     id: "person" as const,

@@ -128,7 +128,7 @@ export function BoardColumn({
               <span className="sr-only">合并任务</span>
             </Button>
           )}
-          {column.id === "dialog" && (
+          {column.id === "execute" && (
             <Button
               variant="ghost"
               size="icon"
@@ -165,7 +165,7 @@ export function BoardColumn({
           tasks={tasks}
         />
       )}
-      {column.id === "dialog" && (
+      {column.id === "execute" && (
         <ChatDialog
           open={chatDialogOpen}
           onOpenChange={setChatDialogOpen}
