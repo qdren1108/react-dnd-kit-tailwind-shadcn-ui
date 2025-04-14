@@ -3,13 +3,15 @@ import { useDndContext, type UniqueIdentifier } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useMemo, useState } from "react";
 import React from "react";
-import { Task, TaskCard } from "./TaskCard";
+import { TaskCard } from "./TaskCard";
+import { Task } from "../types";
 import { cva } from "class-variance-authority";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
-import { GripVertical, Plus } from "lucide-react";
+import { GripVertical, Plus, Merge } from "lucide-react";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { AddTaskDialog } from "./AddTaskDialog";
+import { MergeTaskDialog } from "./MergeTaskDialog";
 
 export interface Column {
   id: UniqueIdentifier;
@@ -29,6 +31,7 @@ interface BoardColumnProps {
   isOverlay?: boolean;
   onAddTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
   onDeleteTask?: (taskId: UniqueIdentifier) => void;
+  onMergeTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
 }
 
 export function BoardColumn({
@@ -37,8 +40,10 @@ export function BoardColumn({
   isOverlay,
   onAddTask,
   onDeleteTask,
+  onMergeTask,
 }: BoardColumnProps) {
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
+  const [mergeTaskDialogOpen, setMergeTaskDialogOpen] = useState(false);
   const tasksIds = useMemo(() => {
     return tasks.map((task) => task.id);
   }, [tasks]);
@@ -110,6 +115,17 @@ export function BoardColumn({
               <span className="sr-only">添加任务</span>
             </Button>
           )}
+          {column.id === "person" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-primary/50 hover:text-primary"
+              onClick={() => setMergeTaskDialogOpen(true)}
+            >
+              <Merge className="h-4 w-4" />
+              <span className="sr-only">合并任务</span>
+            </Button>
+          )}
         </CardHeader>
         <ScrollArea>
           <CardContent className="flex flex-grow flex-col gap-2 p-2">
@@ -126,6 +142,14 @@ export function BoardColumn({
           open={addTaskDialogOpen}
           onOpenChange={setAddTaskDialogOpen}
           onAddTask={onAddTask}
+        />
+      )}
+      {column.id === "person" && onMergeTask && (
+        <MergeTaskDialog
+          open={mergeTaskDialogOpen}
+          onOpenChange={setMergeTaskDialogOpen}
+          onMergeTask={onMergeTask}
+          tasks={tasks}
         />
       )}
     </div>

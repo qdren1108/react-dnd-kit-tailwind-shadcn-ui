@@ -65,6 +65,15 @@ const initialTasks: Task[] = [
     params: "accountId, phone"
   },
   {
+    id: "task5",
+    columnId: "bank",
+    name: "顾客属性变更 - 邮箱修改",
+    description: "更新顾客留存邮箱",
+    tableName: "bank_account",
+    url: "/api/bank/email/update",
+    params: "accountId, email"
+  },
+  {
     id: "task6",
     columnId: "person",
     name: "个人信息更新",
@@ -372,6 +381,22 @@ export function KanbanBoard() {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
 
+  const handleMergeTask = (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+  }) => {
+    const newTask: Task = {
+      id: `task${tasks.length + 1}`,
+      columnId: "person",
+      ...taskData
+    };
+
+    setTasks([...tasks, newTask]);
+  };
+
   return (
     <DndContext
       accessibility={{
@@ -391,6 +416,7 @@ export function KanbanBoard() {
               tasks={tasks.filter((task) => task.columnId === col.id)}
               onAddTask={col.id === "standard" ? handleAddTask : undefined}
               onDeleteTask={handleDeleteTask}
+              onMergeTask={col.id === "person" ? handleMergeTask : undefined}
             />
           ))}
         </SortableContext>
