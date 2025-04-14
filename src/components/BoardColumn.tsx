@@ -8,10 +8,11 @@ import { Task } from "../types";
 import { cva } from "class-variance-authority";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
-import { GripVertical, Plus, Merge } from "lucide-react";
+import { GripVertical, Plus, Merge, MessageSquare } from "lucide-react";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { MergeTaskDialog } from "./MergeTaskDialog";
+import { ChatDialog } from "./ChatDialog";
 
 export interface Column {
   id: UniqueIdentifier;
@@ -44,6 +45,7 @@ export function BoardColumn({
 }: BoardColumnProps) {
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [mergeTaskDialogOpen, setMergeTaskDialogOpen] = useState(false);
+  const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const tasksIds = useMemo(() => {
     return tasks.map((task) => task.id);
   }, [tasks]);
@@ -126,6 +128,17 @@ export function BoardColumn({
               <span className="sr-only">合并任务</span>
             </Button>
           )}
+          {column.id === "dialog" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-primary/50 hover:text-primary"
+              onClick={() => setChatDialogOpen(true)}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="sr-only">打开对话</span>
+            </Button>
+          )}
         </CardHeader>
         <ScrollArea>
           <CardContent className="flex flex-grow flex-col gap-2 p-2">
@@ -150,6 +163,12 @@ export function BoardColumn({
           onOpenChange={setMergeTaskDialogOpen}
           onMergeTask={onMergeTask}
           tasks={tasks}
+        />
+      )}
+      {column.id === "dialog" && (
+        <ChatDialog
+          open={chatDialogOpen}
+          onOpenChange={setChatDialogOpen}
         />
       )}
     </div>
