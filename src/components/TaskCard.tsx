@@ -67,21 +67,23 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
         dragging: isOverlay ? "overlay" : isDragging ? "over" : undefined,
       })}
     >
-      <CardHeader className="px-3 py-3 space-between flex flex-row border-b-2 border-secondary relative">
+      <CardHeader className="px-2 py-2 space-between flex flex-row border-b-2 border-secondary relative ">
+
         <Button
           variant={"ghost"}
           {...attributes}
           {...listeners}
-          className="p-1 text-secondary-foreground/50 -ml-2 h-auto cursor-grab"
+          className="p-0.5 text-secondary-foreground/50 -ml-2 h-auto cursor-grab"
         >
           <span className="sr-only">Move task</span>
-          <GripVertical />
+          <GripVertical className="h-4 w-4" />
+
         </Button>
-        <Badge variant={"outline"} className="ml-auto font-semibold">
+        <Badge variant={"outline"} className="ml-auto font-semibold text-xs">
           Task
         </Badge>
       </CardHeader>
-      <CardContent className="px-3 pt-3 pb-6 text-left whitespace-pre-wrap">
+      <CardContent className="px-2 pt-2 pb-3 text-left whitespace-pre-wrap text-sm">
         {task.content}
       </CardContent>
     </Card>

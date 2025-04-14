@@ -24,17 +24,22 @@ import { coordinateGetter } from "./multipleContainersKeyboardPreset";
 
 const defaultCols = [
   {
-    id: "todo" as const,
-    title: "Todo",
+    id: "dialog" as const,
+    title: "对话事件",
   },
   {
-    id: "in-progress" as const,
-    title: "In progress",
+    id: "person" as const,
+    title: "个人事件库",
   },
   {
-    id: "done" as const,
-    title: "Done",
+    id: "bank" as const,
+    title: "银行事件库",
   },
+  {
+    id: "standard" as const,
+    title: "标准事件库",
+  },
+
 ] satisfies Column[];
 
 export type ColumnId = (typeof defaultCols)[number]["id"];
@@ -42,67 +47,58 @@ export type ColumnId = (typeof defaultCols)[number]["id"];
 const initialTasks: Task[] = [
   {
     id: "task1",
-    columnId: "done",
-    content: "Project initiation and planning",
+    columnId: "standard",
+    content: "顾客属性变更",
   },
-  {
-    id: "task2",
-    columnId: "done",
-    content: "Gather requirements from stakeholders",
-  },
-  {
-    id: "task3",
-    columnId: "done",
-    content: "Create wireframes and mockups",
-  },
+
   {
     id: "task4",
-    columnId: "in-progress",
+    columnId: "bank",
     content: "Develop homepage layout",
   },
   {
     id: "task5",
-    columnId: "in-progress",
+    columnId: "bank",
     content: "Design color scheme and typography",
   },
   {
     id: "task6",
-    columnId: "todo",
+    columnId: "person",
     content: "Implement user authentication",
   },
   {
     id: "task7",
-    columnId: "todo",
+    columnId: "person",
     content: "Build contact us page",
   },
   {
     id: "task8",
-    columnId: "todo",
+    columnId: "person",
     content: "Create product catalog",
   },
   {
     id: "task9",
-    columnId: "todo",
+    columnId: "person",
     content: "Develop about us page",
   },
   {
     id: "task10",
-    columnId: "todo",
+    columnId: "person",
     content: "Optimize website for mobile devices",
   },
   {
     id: "task11",
-    columnId: "todo",
+    columnId: "person",
     content: "Integrate payment gateway",
   },
   {
     id: "task12",
-    columnId: "todo",
+    columnId: "person",
     content: "Perform testing and bug fixing",
   },
   {
     id: "task13",
-    columnId: "todo",
+    columnId: "person",
     content: "Launch website and deploy to server",
   },
 ];
@@ -125,6 +121,15 @@ export function KanbanBoard() {
     })
   );
 
+  const handleAddTask = (content: string) => {
+    const newTask: Task = {
+      id: `task${tasks.length + 1}`,
+      columnId: "standard",
+      content,
+    };
+    setTasks([...tasks, newTask]);
+  };
+
   function getDraggingTaskData(taskId: UniqueIdentifier, columnId: ColumnId) {
     const tasksInColumn = tasks.filter((task) => task.columnId === columnId);
     const taskPosition = tasksInColumn.findIndex((task) => task.id === taskId);
@@ -142,20 +147,17 @@ export function KanbanBoard() {
       if (active.data.current?.type === "Column") {
         const startColumnIdx = columnsId.findIndex((id) => id === active.id);
         const startColumn = columns[startColumnIdx];
-        return `Picked up Column ${startColumn?.title} at position: ${
-          startColumnIdx + 1
-        } of ${columnsId.length}`;
+        return `Picked up Column ${startColumn?.title} at position: ${startColumnIdx + 1
+          } of ${columnsId.length}`;
       } else if (active.data.current?.type === "Task") {
         pickedUpTaskColumn.current = active.data.current.task.columnId;
         const { tasksInColumn, taskPosition, column } = getDraggingTaskData(
           active.id,
           pickedUpTaskColumn.current
         );
-        return `Picked up Task ${
-          active.data.current.task.content
-        } at position: ${taskPosition + 1} of ${
-          tasksInColumn.length
-        } in column ${column?.title}`;
+        return `Picked up Task ${active.data.current.task.content
+          } at position: ${taskPosition + 1} of ${tasksInColumn.length
+          } in column ${column?.title}`;
       }
     },
     onDragOver({ active, over }) {
@@ -166,9 +168,8 @@ export function KanbanBoard() {
         over.data.current?.type === "Column"
       ) {
         const overColumnIdx = columnsId.findIndex((id) => id === over.id);
-        return `Column ${active.data.current.column.title} was moved over ${
-          over.data.current.column.title
-        } at position ${overColumnIdx + 1} of ${columnsId.length}`;
+        return `Column ${active.data.current.column.title} was moved over ${over.data.current.column.title
+          } at position ${overColumnIdx + 1} of ${columnsId.length}`;
       } else if (
         active.data.current?.type === "Task" &&
         over.data.current?.type === "Task"
@@ -178,15 +179,12 @@ export function KanbanBoard() {
           over.data.current.task.columnId
         );
         if (over.data.current.task.columnId !== pickedUpTaskColumn.current) {
-          return `Task ${
-            active.data.current.task.content
-          } was moved over column ${column?.title} in position ${
-            taskPosition + 1
-          } of ${tasksInColumn.length}`;
+          return `Task ${active.data.current.task.content
+            } was moved over column ${column?.title} in position ${taskPosition + 1
+            } of ${tasksInColumn.length}`;
         }
-        return `Task was moved over position ${taskPosition + 1} of ${
-          tasksInColumn.length
-        } in column ${column?.title}`;
+        return `Task was moved over position ${taskPosition + 1} of ${tasksInColumn.length
+          } in column ${column?.title}`;
       }
     },
     onDragEnd({ active, over }) {
@@ -200,11 +198,9 @@ export function KanbanBoard() {
       ) {
         const overColumnPosition = columnsId.findIndex((id) => id === over.id);
 
-        return `Column ${
-          active.data.current.column.title
-        } was dropped into position ${overColumnPosition + 1} of ${
-          columnsId.length
-        }`;
+        return `Column ${active.data.current.column.title
+          } was dropped into position ${overColumnPosition + 1} of ${columnsId.length
+          }`;
       } else if (
         active.data.current?.type === "Task" &&
         over.data.current?.type === "Task"
@@ -214,13 +210,11 @@ export function KanbanBoard() {
           over.data.current.task.columnId
         );
         if (over.data.current.task.columnId !== pickedUpTaskColumn.current) {
-          return `Task was dropped into column ${column?.title} in position ${
-            taskPosition + 1
-          } of ${tasksInColumn.length}`;
+          return `Task was dropped into column ${column?.title} in position ${taskPosition + 1
+            } of ${tasksInColumn.length}`;
         }
-        return `Task was dropped into position ${taskPosition + 1} of ${
-          tasksInColumn.length
-        } in column ${column?.title}`;
+        return `Task was dropped into position ${taskPosition + 1} of ${tasksInColumn.length
+          } in column ${column?.title}`;
       }
       pickedUpTaskColumn.current = null;
     },
@@ -248,6 +242,7 @@ export function KanbanBoard() {
               key={col.id}
               column={col}
               tasks={tasks.filter((task) => task.columnId === col.id)}
+              onAddTask={col.id === "standard" ? handleAddTask : undefined}
             />
           ))}
         </SortableContext>
