@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cva } from "class-variance-authority";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Layers } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { ColumnId } from "./KanbanBoard";
 import { Task } from "../types";
@@ -77,6 +77,14 @@ export function TaskCard({ task, isOverlay, onDelete }: TaskCardProps) {
         <div className="flex-1">
           <CardTitle className="text-sm font-medium">{task.name}</CardTitle>
           <CardDescription className="text-xs">{task.description}</CardDescription>
+          {task.sourceTasks && task.sourceTasks.length > 0 && (
+            <div className="flex items-center gap-1 mt-1">
+              <Layers className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                包含 {task.sourceTasks.length} 个原始任务
+              </span>
+            </div>
+          )}
         </div>
         {onDelete && (
           <Button

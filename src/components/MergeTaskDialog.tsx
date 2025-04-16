@@ -22,6 +22,7 @@ interface MergeTaskDialogProps {
         tableName: string;
         url: string;
         params: string;
+        sourceTasks: Task[];
     }) => void;
     tasks: Task[];
 }
@@ -32,18 +33,27 @@ export function MergeTaskDialog({ open, onOpenChange, onMergeTask, tasks }: Merg
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (selectedTasks.length >= 2) {
-            const selectedTaskNames = selectedTasks
-                .map(taskId => tasks.find(task => task.id === taskId)?.name)
-                .filter(Boolean)
+            const selectedTaskObjects = selectedTasks
+                .map(taskId => tasks.find(task => task.id === taskId))
+                .filter((task): task is Task => task !== undefined);
+
+            const selectedTaskNames = selectedTaskObjects
+                .map(task => task.name)
                 .join(" + ");
+
+            console.log('选中的任务信息:', selectedTaskObjects);
 
             const mergedTask = {
                 name: selectedTaskNames,
                 description: "由多个任务合并而成",
                 tableName: "merged",
                 url: "/api/merged",
-                params: selectedTasks.join(",")
+                params: selectedTasks.join(","),
+                sourceTasks: selectedTaskObjects
             };
+
+            console.log('合并后的任务信息:', mergedTask);
+
             onMergeTask(mergedTask);
             setSelectedTasks([]);
             onOpenChange(false);

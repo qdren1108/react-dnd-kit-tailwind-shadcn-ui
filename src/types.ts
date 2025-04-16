@@ -9,4 +9,5 @@ export interface Task {
     tableName: string;
     url: string;
     params: string;
+    sourceTasks?: Task[]; // 存储原始任务信息
 } 

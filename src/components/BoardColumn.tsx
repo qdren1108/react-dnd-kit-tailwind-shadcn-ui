@@ -32,7 +32,7 @@ interface BoardColumnProps {
   isOverlay?: boolean;
   onAddTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
   onDeleteTask?: (taskId: UniqueIdentifier) => void;
-  onMergeTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
+  onMergeTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; sourceTasks: Task[]; }) => void;
 }
 
 export function BoardColumn({

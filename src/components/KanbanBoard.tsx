@@ -128,8 +128,11 @@ export function KanbanBoard() {
     url: string;
     params: string;
   }) => {
+    // 使用时间戳和随机数生成唯一ID
+    const newTaskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const newTask: Task = {
-      id: `task${tasks.length + 1}`,
+      id: newTaskId,
       columnId: "standard",
       ...taskData
     };
@@ -277,6 +280,37 @@ export function KanbanBoard() {
         setTasks(tasks.map(task =>
           task.id === activeId ? { ...task, columnId: "execute" } : task
         ));
+
+        // 添加日志输出
+        console.log('执行任务信息:', {
+          taskName: activeTask.name,
+          taskDescription: activeTask.description,
+          sourceTasks: activeTask.sourceTasks,
+          originalTasks: activeTask.sourceTasks?.map(task => ({
+            id: task.id,
+            name: task.name,
+            description: task.description,
+            tableName: task.tableName,
+            url: task.url,
+            params: task.params
+          }))
+        });
+
+        // 添加更详细的日志
+        console.log('原始任务详细信息:', {
+          taskId: activeTask.id,
+          taskName: activeTask.name,
+          sourceTasksCount: activeTask.sourceTasks?.length,
+          sourceTasksDetails: activeTask.sourceTasks?.map(task => ({
+            id: task.id,
+            name: task.name,
+            description: task.description,
+            tableName: task.tableName,
+            url: task.url,
+            params: task.params
+          }))
+        });
+
         setTaskToExecute(activeTask);
         setExecuteDialogOpen(true);
         return;
@@ -414,12 +448,27 @@ export function KanbanBoard() {
     tableName: string;
     url: string;
     params: string;
+    sourceTasks: Task[];
   }) => {
+    // 添加日志，确认接收到的合并任务信息
+    console.log('接收到的合并任务信息:', taskData);
+
+    // 使用时间戳和随机数生成唯一ID
+    const newTaskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const newTask: Task = {
-      id: `task${tasks.length + 1}`,
+      id: newTaskId,
       columnId: "person",
-      ...taskData
+      name: taskData.name,
+      description: taskData.description,
+      tableName: taskData.tableName,
+      url: taskData.url,
+      params: taskData.params,
+      sourceTasks: taskData.sourceTasks
     };
+
+    // 添加日志，确认新创建的任务信息
+    console.log('新创建的任务信息:', newTask);
 
     setTasks([...tasks, newTask]);
   };
