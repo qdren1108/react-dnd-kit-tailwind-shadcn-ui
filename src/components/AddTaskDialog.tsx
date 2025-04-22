@@ -9,7 +9,7 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AddTaskDialogProps {
     open: boolean;
@@ -20,40 +20,58 @@ interface AddTaskDialogProps {
         tableName: string;
         url: string;
         params: string;
-    }) => void;
+    }, targetColumn: string) => void;
+    targetColumn: string;
+    initialTaskName?: string;
 }
 
-export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogProps) {
-    const [taskData, setTaskData] = useState({
-        name: "",
-        description: "",
-        tableName: "",
-        url: "",
-        params: ""
-    });
+export function AddTaskDialog({
+    open,
+    onOpenChange,
+    onAddTask,
+    targetColumn,
+    initialTaskName = ""
+}: AddTaskDialogProps) {
+    const [name, setName] = useState(initialTaskName);
+    const [description, setDescription] = useState("");
+    const [tableName, setTableName] = useState("");
+    const [url, setUrl] = useState("");
+    const [params, setParams] = useState("");
+
+    useEffect(() => {
+        setName(initialTaskName);
+    }, [initialTaskName]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (taskData.name.trim()) {
-            onAddTask(taskData);
-            setTaskData({
-                name: "",
-                description: "",
-                tableName: "",
-                url: "",
-                params: ""
-            });
-            onOpenChange(false);
-        }
+        onAddTask({
+            name,
+            description,
+            tableName,
+            url,
+            params,
+        }, targetColumn);
     };
 
-    const handleChange = (field: keyof typeof taskData) => (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        setTaskData(prev => ({
-            ...prev,
-            [field]: e.target.value
-        }));
+    const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        switch (field) {
+            case "name":
+                setName(value);
+                break;
+            case "description":
+                setDescription(value);
+                break;
+            case "tableName":
+                setTableName(value);
+                break;
+            case "url":
+                setUrl(value);
+                break;
+            case "params":
+                setParams(value);
+                break;
+        }
     };
 
     return (
@@ -74,7 +92,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                             <Input
                                 id="name"
                                 className="col-span-3"
-                                value={taskData.name}
+                                value={name}
                                 onChange={handleChange("name")}
                                 placeholder="请输入任务名称"
                             />
@@ -86,7 +104,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                             <Input
                                 id="description"
                                 className="col-span-3"
-                                value={taskData.description}
+                                value={description}
                                 onChange={handleChange("description")}
                                 placeholder="请输入任务描述"
                             />
@@ -98,7 +116,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                             <Input
                                 id="tableName"
                                 className="col-span-3"
-                                value={taskData.tableName}
+                                value={tableName}
                                 onChange={handleChange("tableName")}
                                 placeholder="请输入表名"
                             />
@@ -110,7 +128,7 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                             <Input
                                 id="url"
                                 className="col-span-3"
-                                value={taskData.url}
+                                value={url}
                                 onChange={handleChange("url")}
                                 placeholder="请输入URL地址"
                             />
@@ -122,14 +140,14 @@ export function AddTaskDialog({ open, onOpenChange, onAddTask }: AddTaskDialogPr
                             <Input
                                 id="params"
                                 className="col-span-3"
-                                value={taskData.params}
+                                value={params}
                                 onChange={handleChange("params")}
                                 placeholder="请输入入参"
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit" disabled={!taskData.name.trim()}>
+                        <Button type="submit" disabled={!name.trim()}>
                             添加任务
                         </Button>
                     </DialogFooter>

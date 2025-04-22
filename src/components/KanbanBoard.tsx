@@ -127,13 +127,13 @@ export function KanbanBoard() {
     tableName: string;
     url: string;
     params: string;
-  }) => {
+  }, targetColumn: string) => {
     // 使用时间戳和随机数生成唯一ID
     const newTaskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     const newTask: Task = {
       id: newTaskId,
-      columnId: "standard",
+      columnId: targetColumn as ColumnId,
       ...taskData
     };
     setTasks([...tasks, newTask]);
@@ -511,7 +511,7 @@ export function KanbanBoard() {
               key={col.id}
               column={col}
               tasks={tasks.filter((task) => task.columnId === col.id)}
-              onAddTask={col.id === "standard" ? handleAddTask : undefined}
+              onAddTask={col.id === "standard" || col.id === "bank" ? handleAddTask : undefined}
               onDeleteTask={handleDeleteTask}
               onMergeTask={col.id === "person" ? handleMergeTask : undefined}
             />

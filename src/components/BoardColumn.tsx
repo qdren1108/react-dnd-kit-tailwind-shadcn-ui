@@ -14,6 +14,7 @@ import { AddTaskDialog } from "./AddTaskDialog";
 import { MergeTaskDialog } from "./MergeTaskDialog";
 import { ChatDialog } from "./ChatDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
+import { TaskTransformDialog } from "./TaskTransformDialog";
 
 export interface Column {
   id: UniqueIdentifier;
@@ -31,9 +32,22 @@ interface BoardColumnProps {
   column: Column;
   tasks: Task[];
   isOverlay?: boolean;
-  onAddTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; }) => void;
+  onAddTask?: (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+  }, targetColumn: string) => void;
   onDeleteTask?: (taskId: UniqueIdentifier) => void;
-  onMergeTask?: (taskData: { name: string; description: string; tableName: string; url: string; params: string; sourceTasks: Task[]; }) => void;
+  onMergeTask?: (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+    sourceTasks: Task[];
+  }) => void;
 }
 
 export function BoardColumn({
@@ -47,6 +61,9 @@ export function BoardColumn({
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [mergeTaskDialogOpen, setMergeTaskDialogOpen] = useState(false);
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [transformDialogOpen, setTransformDialogOpen] = useState(false);
+  const [selectedTaskType, setSelectedTaskType] = useState<string>("");
+
   const tasksIds = useMemo(() => {
     return tasks.map((task) => task.id);
   }, [tasks]);
@@ -86,6 +103,46 @@ export function BoardColumn({
       },
     }
   );
+
+  const handleMenuItemClick = (type: string) => {
+    setSelectedTaskType(type);
+    setAddTaskDialogOpen(true);
+  };
+
+  const handleAddTask = (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+  }, targetColumn: string) => {
+    console.log("准备添加任务:", taskData);
+    console.log("目标列:", targetColumn);
+
+    if (onAddTask) {
+      console.log("调用 onAddTask 回调");
+      onAddTask(taskData, targetColumn);
+    } else {
+      console.error("onAddTask 回调未定义");
+    }
+
+    setAddTaskDialogOpen(false);
+    setSelectedTaskType("");
+  };
+
+  const handleTransformTask = (taskData: {
+    name: string;
+    description: string;
+    tableName: string;
+    url: string;
+    params: string;
+    transformType: string;
+  }) => {
+    if (onAddTask) {
+      onAddTask(taskData, "bank");
+    }
+    setTransformDialogOpen(false);
+  };
 
   return (
     <div className="flex flex-col">
@@ -139,17 +196,17 @@ export function BoardColumn({
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>法人信息</DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem>基本信息变更</DropdownMenuItem>
-                        <DropdownMenuItem>法定代表人变更</DropdownMenuItem>
-                        <DropdownMenuItem>注册资本变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("基本信息变更")}>基本信息变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("法定代表人变更")}>法定代表人变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("注册资本变更")}>注册资本变更</DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>个人信息</DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem>身份信息变更</DropdownMenuItem>
-                        <DropdownMenuItem>联系方式变更</DropdownMenuItem>
-                        <DropdownMenuItem>地址信息变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("身份信息变更")}>身份信息变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("联系方式变更")}>联系方式变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("地址信息变更")}>地址信息变更</DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                   </DropdownMenuSubContent>
@@ -160,17 +217,17 @@ export function BoardColumn({
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>对公账户</DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem>开户申请</DropdownMenuItem>
-                        <DropdownMenuItem>销户申请</DropdownMenuItem>
-                        <DropdownMenuItem>账户状态变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("开户申请")}>开户申请</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("销户申请")}>销户申请</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("账户状态变更")}>账户状态变更</DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>个人账户</DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem>开户申请</DropdownMenuItem>
-                        <DropdownMenuItem>销户申请</DropdownMenuItem>
-                        <DropdownMenuItem>账户状态变更</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("开户申请")}>开户申请</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("销户申请")}>销户申请</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuItemClick("账户状态变更")}>账户状态变更</DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                   </DropdownMenuSubContent>
@@ -178,25 +235,25 @@ export function BoardColumn({
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>交易管理</DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem>转账交易</DropdownMenuItem>
-                    <DropdownMenuItem>支付结算</DropdownMenuItem>
-                    <DropdownMenuItem>资金归集</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("转账交易")}>转账交易</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("支付结算")}>支付结算</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("资金归集")}>资金归集</DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>信贷业务</DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem>贷款申请</DropdownMenuItem>
-                    <DropdownMenuItem>还款处理</DropdownMenuItem>
-                    <DropdownMenuItem>额度调整</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("贷款申请")}>贷款申请</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("还款处理")}>还款处理</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("额度调整")}>额度调整</DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>风控管理</DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem>风险预警</DropdownMenuItem>
-                    <DropdownMenuItem>合规检查</DropdownMenuItem>
-                    <DropdownMenuItem>反洗钱监控</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("风险预警")}>风险预警</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("合规检查")}>合规检查</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMenuItemClick("反洗钱监控")}>反洗钱监控</DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
               </DropdownMenuContent>
@@ -240,6 +297,7 @@ export function BoardColumn({
           open={addTaskDialogOpen}
           onOpenChange={setAddTaskDialogOpen}
           onAddTask={onAddTask}
+          targetColumn={column.id}
         />
       )}
       {column.id === "person" && onMergeTask && (
@@ -256,6 +314,34 @@ export function BoardColumn({
           onOpenChange={setChatDialogOpen}
         />
       )}
+      {column.id === "bank" && (
+        <AddTaskDialog
+          open={addTaskDialogOpen}
+          onOpenChange={(open) => {
+            setAddTaskDialogOpen(open);
+            if (!open) {
+              setSelectedTaskType("");
+            }
+          }}
+          onAddTask={handleAddTask}
+          targetColumn={column.id}
+          initialTaskName={selectedTaskType}
+        />
+      )}
+      <TaskTransformDialog
+        open={transformDialogOpen}
+        onOpenChange={setTransformDialogOpen}
+        sourceTask={{
+          id: "new",
+          columnId: "bank",
+          name: selectedTaskType,
+          description: "",
+          tableName: "",
+          url: "",
+          params: ""
+        }}
+        onTransform={handleTransformTask}
+      />
     </div>
   );
 }
