@@ -28,9 +28,9 @@ function App() {
                 <Github className="fill-current h-full w-full" />
               </a>
             </Button>
-            <Button variant="link" asChild className="text-primary h-16 w-16">
+            {/* <Button variant="link" asChild className="text-primary h-16 w-16">
               <a href="https://griffa.dev">@griffadev</a>
-            </Button>
+            </Button> */}
             <ThemeToggle />
           </header>
           <main className="mx-4 flex flex-col gap-6">
@@ -39,7 +39,7 @@ function App() {
             </h1>
             <KanbanBoard />
             <p className="leading-7 [&:not(:first-child)]:mt-6">
-              With Keyboard Controls and Screen Reader interactions.
+              {/* With Keyboard Controls and Screen Reader interactions. */}
             </p>
           </main>
           <footer className="mt-6">

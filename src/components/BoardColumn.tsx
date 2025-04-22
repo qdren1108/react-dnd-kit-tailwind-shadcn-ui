@@ -13,6 +13,7 @@ import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { MergeTaskDialog } from "./MergeTaskDialog";
 import { ChatDialog } from "./ChatDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
 
 export interface Column {
   id: UniqueIdentifier;
@@ -116,6 +117,90 @@ export function BoardColumn({
               <Plus className="h-4 w-4" />
               <span className="sr-only">添加任务</span>
             </Button>
+          )}
+          {column.id === "bank" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-primary/50 hover:text-primary"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="sr-only">打开菜单</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>银行事件操作</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>属性修改</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>法人信息</DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem>基本信息变更</DropdownMenuItem>
+                        <DropdownMenuItem>法定代表人变更</DropdownMenuItem>
+                        <DropdownMenuItem>注册资本变更</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>个人信息</DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem>身份信息变更</DropdownMenuItem>
+                        <DropdownMenuItem>联系方式变更</DropdownMenuItem>
+                        <DropdownMenuItem>地址信息变更</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>账户管理</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>对公账户</DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem>开户申请</DropdownMenuItem>
+                        <DropdownMenuItem>销户申请</DropdownMenuItem>
+                        <DropdownMenuItem>账户状态变更</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>个人账户</DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem>开户申请</DropdownMenuItem>
+                        <DropdownMenuItem>销户申请</DropdownMenuItem>
+                        <DropdownMenuItem>账户状态变更</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>交易管理</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem>转账交易</DropdownMenuItem>
+                    <DropdownMenuItem>支付结算</DropdownMenuItem>
+                    <DropdownMenuItem>资金归集</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>信贷业务</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem>贷款申请</DropdownMenuItem>
+                    <DropdownMenuItem>还款处理</DropdownMenuItem>
+                    <DropdownMenuItem>额度调整</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>风控管理</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem>风险预警</DropdownMenuItem>
+                    <DropdownMenuItem>合规检查</DropdownMenuItem>
+                    <DropdownMenuItem>反洗钱监控</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           {column.id === "person" && (
             <Button
